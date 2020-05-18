@@ -126,6 +126,11 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
+#Visual Studio project settings
+*.pyproj
+*.sln
+.vs/
+
 # mkdocs documentation
 /site
 
