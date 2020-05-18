@@ -23,7 +23,7 @@ class Generator:
         self.max_coordinates = (0, 0)
         self.max_magnitude = 0
 
-    def loadJSONData(self, json_file, date_range):
+    def loadJSONData(self, json_file, date_range, gps_precision):
         """Loads the Google location data from the given json file.
 
         Arguments:
@@ -38,14 +38,14 @@ class Generator:
             for i, loc in enumerate(data["locations"]):
                 if "latitudeE7" not in loc or "longitudeE7" not in loc:
                     continue
-                coords = (round(loc["latitudeE7"] / 1e7, 6),
-                           round(loc["longitudeE7"] / 1e7, 6))
+                coords = (round(loc["latitudeE7"] / 1e7, gps_precision),
+                           round(loc["longitudeE7"] / 1e7, gps_precision))
 
                 if timestampInRange(loc["timestampMs"], date_range):
                     self.updateCoord(coords)
                 pb.update(i)
 
-    def streamJSONData(self, json_file, date_range):
+    def streamJSONData(self, json_file, date_range, gps_precision):
         """Stream the Google location data from the given json file.
         
         Arguments:
@@ -64,8 +64,8 @@ class Generator:
             for i, loc in enumerate(locations):
                 if "latitudeE7" not in loc or "longitudeE7" not in loc:
                     continue
-                coords = (round(loc["latitudeE7"] / 1e7, 6),
-                            round(loc["longitudeE7"] / 1e7, 6))
+                coords = (round(loc["latitudeE7"] / 1e7, gps_precision),
+                            round(loc["longitudeE7"] / 1e7, gps_precision))
 
                 if timestampInRange(loc["timestampMs"], date_range):
                     self.updateCoord(coords)
@@ -75,7 +75,7 @@ class Generator:
                     pb.max_value = i
                 pb.update(i)
 
-    def loadKMLData(self, file_name, date_range):
+    def loadKMLData(self, file_name, date_range, gps_precision):
         """Loads the Google location data from the given KML file.
 
         Arguments:
@@ -92,13 +92,13 @@ class Generator:
         with ProgressBar(max_value=len(gxtrack), widgets=w) as pb:
             for i, number in enumerate(gxtrack):
                 loc = (number.firstChild.data).split()
-                coords = (round(float(loc[1]), 6), round(float(loc[0]), 6))
+                coords = (round(float(loc[1]), gps_precision), round(float(loc[0]), gps_precision))
                 date = when[i].firstChild.data
                 if dateInRange(date[:10], date_range):
                     self.updateCoord(coords)
                 pb.update(i)
 
-    def loadGPXData(self, file_name, date_range):
+    def loadGPXData(self, file_name, date_range, gps_precision):
         """Loads location data from the given GPX file.
 
         Arguments:
@@ -115,13 +115,13 @@ class Generator:
             for i, trkpt in enumerate(gxtrack):
                 lat = trkpt.getAttribute("lat")
                 lon = trkpt.getAttribute("lon")
-                coords = (round(float(lat), 6), round(float(lon), 6))
+                coords = (round(float(lat), gps_precision), round(float(lon), gps_precision))
                 date = trkpt.getElementsByTagName("time")[0].firstChild.data
                 if dateInRange(date[:10], date_range):
                     self.updateCoord(coords)
                 pb.update(i)
 
-    def loadZIPData(self, file_name, date_range):
+    def loadZIPData(self, file_name, date_range, gps_precision):
         """
         Load Google location data from a "takeout-*.zip" file.
         """
@@ -149,10 +149,10 @@ class Generator:
 
         if data_path.endswith(".json"):
             with zip_file.open(data_path) as read_file:
-                self.loadJSONData(read_file, date_range)
+                self.loadJSONData(read_file, date_range, gps_precision)
         elif data_path.endswith(".kml"):
             with zip_file.open(data_path) as read_file:
-                self.loadKMLData(read_file, date_range)
+                self.loadKMLData(read_file, date_range, gps_precision)
         else:
             raise ValueError("unsupported extension for {!r}: only .json and .kml supported"
                 .format(file_name))
@@ -198,7 +198,7 @@ class Generator:
         m.add_child(heatmap)
         return m
 
-    def run(self, data_files, output_file, date_range, stream_data, settings):
+    def run(self, data_files, output_file, date_range, gps_precision, stream_data, settings):
         """Load the data, generate the heatmap and save it.
 
         Arguments:
@@ -217,17 +217,17 @@ class Generator:
                 len(data_files) + 2, 
                 data_file))
             if data_file.endswith(".zip"):
-                self.loadZIPData(data_file, date_range)
+                self.loadZIPData(data_file, date_range, gps_precision)
             elif data_file.endswith(".json"):
                 with open(data_file) as json_file:
                     if stream_data:
-                        self.streamJSONData(json_file, date_range)
+                        self.streamJSONData(json_file, date_range, gps_precision)
                     else:
-                        self.loadJSONData(json_file, date_range)
+                        self.loadJSONData(json_file, date_range, gps_precision)
             elif data_file.endswith(".kml"):
-                self.loadKMLData(data_file, date_range)
+                self.loadKMLData(data_file, date_range, gps_precision)
             elif data_file.endswith(".gpx"):
-                self.loadGPXData(data_file, date_range)
+                self.loadGPXData(data_file, date_range, gps_precision)
             else:
                 raise NotImplementedError(
                     "Unsupported file extension for {!r}".format(data_file))
@@ -272,6 +272,9 @@ if __name__ == "__main__":
                         help="The minimum opacity of the heatmap. (default: %(default)s)", default=0.2)
     parser.add_argument("-mz", "--max-zoom", dest="max_zoom", type=int, required=False,
                         help="The maximum zoom of the heatmap. (default: %(default)s)", default=4)
+    parser.add_argument("-p", "--gps-precision", dest="gps_precision", type=int, required=False,
+                        help="The number of decimal places for GPS coord rounding. (default: %(default)s)\n" \
+                            "3: 100m accuracy, 4: 10m, 5: 1m, 6: 100mm", default=3)
     
 
     args = parser.parse_args()
@@ -280,6 +283,7 @@ if __name__ == "__main__":
     output_file = args.output
     date_range = args.min_date, args.max_date
     stream_data = args.stream
+    gps_precision = args.gps_precision
     settings = {
         "tiles": args.map,
         "zoom_start": args.zoom_start,
@@ -290,7 +294,7 @@ if __name__ == "__main__":
     }
 
     generator = Generator()
-    generator.run(data_file, output_file, date_range, stream_data, settings)
+    generator.run(data_file, output_file, date_range, gps_precision, stream_data, settings)
     # Check if browser is text-based
     if not isTextBasedBrowser(webbrowser.get()):
         try:
