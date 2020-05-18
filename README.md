@@ -69,6 +69,10 @@ Multiple files:
 python geo_heatmap.py locations.json locations.kml takeout.zip
 ```
 
+```shell
+python geo_heatmap.py *.gpx
+```
+
 Using the stream option (for users with Memory Errors):
 
 ```shell
