@@ -232,9 +232,10 @@ class Generator:
                 raise NotImplementedError(
                     "Unsupported file extension for {!r}".format(data_file))
                 
-        print("\n({}/{}) generateMapGenerating heatmap".format(
+        print("\n({}/{}) generateMapGenerating heatmap with {} points".format(
             len(data_files) + 1, 
-            len(data_files) + 2))
+            len(data_files) + 2,
+            len(self.coordinates)))
         m = self.generateMap(settings)
         print("\n({}/{}) Saving map to {}\n".format(
             len(data_files) + 2,
