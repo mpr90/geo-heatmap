@@ -18,7 +18,7 @@ Here you can download all of the data that Google has stored on you: <https://ta
 To use this script, you only need to select and download your "Location History", which Google will provide to you as a JSON file by default.  KML is also an output option and is accepted for this program.
 
 You can also import [GPS Exchange Format (GPX)](https://en.wikipedia.org/wiki/GPS_Exchange_Format) files,
-e.g. from a GPS tracker.
+e.g. from a GPS tracker of from a Strava data download.
 
 ### 3. Clone This Repository
 
@@ -40,7 +40,7 @@ In the same command prompt or Terminal window, type the following, and press ent
 python geo_heatmap.py <file> [<file> ...]
 ```
 
-Replace the string `<file>` from above with the path to any of the following files:
+Replace the string `<file>` from above with the path (or wildcard) to any of the following files:
 
 - The `Location History.json` JSON file from Google Takeout
 - The `Location History.kml` KML file from Google Takeout

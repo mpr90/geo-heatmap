@@ -14,6 +14,7 @@ import webbrowser
 from xml.etree import ElementTree
 from xml.dom import minidom
 import zipfile
+import glob
 
 
 class Generator:
@@ -273,7 +274,8 @@ if __name__ == "__main__":
     
 
     args = parser.parse_args()
-    data_file = args.files
+    # See: https://stackoverflow.com/questions/4568580/python-glob-multiple-filetypes
+    data_file = [f for f_ in [glob.glob(e) for e in args.files] for f in f_]
     output_file = args.output
     date_range = args.min_date, args.max_date
     stream_data = args.stream
