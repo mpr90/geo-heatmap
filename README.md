@@ -127,6 +127,9 @@ optional arguments:
                         The minimum opacity of the heatmap. (default: 0.2)
   -mz MAX_ZOOM, --max-zoom MAX_ZOOM
                         The maximum zoom of the heatmap. (default: 4)
+  -p GPS_PRECISION, --gps-precision GPS_PRECISION
+                        The number of decimal places for GPS coord rounding. (default: 3)
+                        3: 100m accuracy, 4: 10m, 5: 1m, 6: 100mm
 ```
 
 ### 6. Review the Results
